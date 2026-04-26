@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ServiMatch - Premium Marketplace</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Íconos -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body>
+
+  <!-- Background Effects -->
+  <div class="bg-glow"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar glass">
+    <div class="nav-brand" onclick="app.navigate('market')">
+      <i class="bi bi-gem text-primary"></i>
+      <span>Servi<span class="text-primary">Match</span></span>
+    </div>
+    <div class="nav-menu" id="nav-menu">
+      <!-- Se llena dinámicamente -->
+    </div>
+  </nav>
+
+  <!-- Main Content Container -->
+  <main id="app-container" class="container">
+    <!-- Las vistas se inyectarán aquí -->
+  </main>
+
+  <!-- Modals Container -->
+  <div id="modals-container"></div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts en orden (sin módulos para evitar problemas de CORS local) -->
+  <script src="js/db.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/views.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
