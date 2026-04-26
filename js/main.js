@@ -248,22 +248,48 @@ const App = {
     this.tempPhotos = []; // Reset photos
   },
 
-  previewPhotos(event) {
+  compressImage(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const MAX_SIZE = 800;
+          
+          if (width > height) {
+            if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+          } else {
+            if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.7)); // 70% quality JPEG (~50kb)
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  },
+
+  async previewPhotos(event) {
     const files = event.target.files;
     const preview = document.getElementById('photo-preview');
     preview.innerHTML = '';
     this.tempPhotos = [];
 
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        preview.appendChild(img);
-        this.tempPhotos.push(e.target.result); // Save base64
-      };
-      reader.readAsDataURL(file);
-    });
+    for (let file of Array.from(files)) {
+      const compressedData = await this.compressImage(file);
+      const img = document.createElement('img');
+      img.src = compressedData;
+      preview.appendChild(img);
+      this.tempPhotos.push(compressedData);
+    }
   },
 
   doCreateOffer() {
@@ -386,7 +412,7 @@ const App = {
   },
 
   // --- CLIENT GALLERY ACTIONS ---
-  uploadClientPhotos(event) {
+  async uploadClientPhotos(event) {
     const files = event.target.files;
     const user = DB.getCurrentUser();
     
@@ -396,23 +422,20 @@ const App = {
       return UI.showToast("Solo puedes tener un máximo de 5 fotos.", "error");
     }
 
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        user.photos.push(e.target.result);
+    UI.showToast("Comprimiendo y subiendo fotos...");
+    
+    for (let file of Array.from(files)) {
+      const compressedData = await this.compressImage(file);
+      user.photos.push(compressedData);
+    }
         
-        // Save to DB when the last file is processed
-        const users = DB.getUsers();
-        const userIndex = users.findIndex(u => u.id === user.id);
-        users[userIndex].photos = user.photos;
-        DB.setUsers(users);
-        DB.setCurrentUser(user);
-        
-        // Re-render to show new photos
-        this.navigate('client');
-      };
-      reader.readAsDataURL(file);
-    });
+    const users = DB.getUsers();
+    const userIndex = users.findIndex(u => u.id === user.id);
+    users[userIndex].photos = user.photos;
+    DB.setUsers(users);
+    DB.setCurrentUser(user);
+    this.navigate('client');
+    UI.showToast("Fotos subidas con éxito");
   },
 
   removeClientPhoto(index) {
@@ -470,7 +493,7 @@ const App = {
   },
 
   // --- PRO GALLERY ACTIONS ---
-  uploadProPhotos(event) {
+  async uploadProPhotos(event) {
     const files = event.target.files;
     const user = DB.getCurrentUser();
     
@@ -480,23 +503,20 @@ const App = {
       return UI.showToast("Solo puedes tener un máximo de 5 fotos.", "error");
     }
 
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        user.photos.push(e.target.result);
+    UI.showToast("Comprimiendo y subiendo fotos...");
+
+    for (let file of Array.from(files)) {
+      const compressedData = await this.compressImage(file);
+      user.photos.push(compressedData);
+    }
         
-        // Save to DB when the last file is processed
-        const users = DB.getUsers();
-        const userIndex = users.findIndex(u => u.id === user.id);
-        users[userIndex].photos = user.photos;
-        DB.setUsers(users);
-        DB.setCurrentUser(user);
-        
-        // Re-render to show new photos
-        this.navigate('pro');
-      };
-      reader.readAsDataURL(file);
-    });
+    const users = DB.getUsers();
+    const userIndex = users.findIndex(u => u.id === user.id);
+    users[userIndex].photos = user.photos;
+    DB.setUsers(users);
+    DB.setCurrentUser(user);
+    this.navigate('pro');
+    UI.showToast("Fotos subidas con éxito");
   },
 
   removeProPhoto(index) {
